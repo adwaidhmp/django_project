@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}My Django Project{% endblock %}</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- bootstrap styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- custom styles -->
+    <link rel="stylesheet" href="{% static 'student_management/style.css' %}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">ABC COLLEGE</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+            data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" 
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'home' %}">Home</a>
+        </li>
+       {% if user.is_authenticated %}
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'logout' %}">Logout</a></li>
+     {% else %}
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'login' %}">Login</a></li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'register' %}">Register</a></li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'profile' %}">Profile</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+{% block content %}
+<br><br>
+<div class="para">
+<p >ABC College of Arts and Science is a distinguished institution committed to fostering academic
+    excellence, creativity, and holistic growth. The college offers a diverse range of undergraduate
+    and postgraduate programs in arts, science, and commerce, designed to equip students with both 
+    theoretical knowledge and practical skills. With experienced faculty, well-equipped laboratories,
+    modern classrooms, and a resource-rich library, ABC College provides a stimulating environment 
+    for learning and research. The campus promotes extracurricular activities, cultural events, and 
+    sports to ensure the all-round development of students. Emphasizing ethical values, community
+    engagement, and career readiness, ABC College prepares students to excel in higher education, 
+    professional pursuits, and societal contribution, making it a vibrant hub of knowledge and opportunity.</p>
+    <hr>
+  </div>
+    {% endblock content %}
+
+<footer class="bg-dark text-white py-2 mt-auto">
+  <div class="container text-md-left">
+    <div class="row text-md-left">
+
+      <!-- About Section -->
+      <div class="col-md-3 col-lg-3 col-xl-5 mx-auto mt-2">
+        <h6 class="text-uppercase mb-2 fw-bold">ABC College</h6>
+        <p class="small mb-1">
+          ABC College of Arts and Science provides quality education and holistic development. Thanks for visiting!
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-2">
+        <h6 class="text-uppercase mb-2 fw-bold">Quick Links</h6>
+        <p class="small mb-2"><a href="{% url 'home' %}" class="text-white text-decoration-none">Home</a></p>
+        <p class="small mb-2"><a href="{% url 'home' %}" class="text-white text-decoration-none">About Us</a></p>
+        <p class="small mb-2"><a href="{% url 'home' %}" class="text-white text-decoration-none">Departments</a></p>
+        <p class="small mb-2"><a href="{% url 'register' %}" class="text-white text-decoration-none">Register</a></p>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-2">
+        <h6 class="text-uppercase mb-2 fw-bold">Contact</h6>
+        <p class="small mb-2"><i class="bi bi-geo-alt-fill me-1"></i>123 College Road, City</p>
+        <p class="small mb-2"><i class="bi bi-envelope-fill me-1"></i>info@abccollege.edu</p>
+        <p class="small mb-2"><i class="bi bi-telephone-fill me-1"></i>+91 12345 67890</p>
+      </div>
+
+    </div>
+
+    <hr class="my-1" style="border-top: 1px solid rgba(255,255,255,0.3)">
+
+    <div class="row align-items-center">
+      <div class="col-md-7 col-lg-8">
+        <p class="small mb-0">© 2025 ABC College. All Rights Reserved.</p>
+      </div>
+      <div class="col-md-5 col-lg-4">
+        <p class="small mb-0">Designed with ❤️ by ABC College Web Team</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- bootstrap link-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

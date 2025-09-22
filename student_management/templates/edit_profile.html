@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="edit-profile-container">
+    <h2 class="edit-profile-title">Edit Profile</h2>
+
+    <form method="post" class="edit-profile-form">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="edit-profile-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <div class="edit-profile-error">
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+        <div class="edit-profile-error">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="edit-profile-btn">Update Profile</button>
+    </form>
+</div>
+{% endblock %}
