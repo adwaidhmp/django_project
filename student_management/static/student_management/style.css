@@ -200,8 +200,7 @@
 .img {
     width: 150px; 
     height: 150px;        
-    object-fit: cover;    
-    align-content: left;
+    object-fit: cover;
 } 
 
 /* Container */

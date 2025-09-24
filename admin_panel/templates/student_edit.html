@@ -1,0 +1,23 @@
+{% extends 'adminbase.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit Student</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }} 
+        {% if form.instance.profile_picture %}
+    <img src="{{ form.instance.profile_picture.url }}" alt="Profile Picture" width="150" class="mb-3">
+        {% endif %}
+         <!-- renders all fields automatically -->
+        <button type="submit" class="btn btn-primary">Update Student</button>
+        <a href="{% url 'std_view' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

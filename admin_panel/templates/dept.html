@@ -1,0 +1,77 @@
+{% extends 'adminbase.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Manage Departments</h2>
+
+    <!-- Add Department Form -->
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <input type="text" name="name" class="form-control" placeholder="New Department Name" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" name="add" class="btn btn-primary">Add Department</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- List of Departments -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dept in departments %}
+            <tr>
+                <td>{{ dept.id }}</td>
+                <td>{{ dept.name }}</td>
+                <td>
+                    <!-- Edit Button triggers Modal -->
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ dept.id }}">Edit</button>
+
+                    <!-- Delete Form -->
+                    <form method="post" action="{% url 'delete_department' dept.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+            <!-- Edit Modal -->
+            <div class="modal fade" id="editModal{{ dept.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="post" action="{% url 'edit_department' dept.id %}">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Department</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" name="name" class="form-control" value="{{ dept.name }}" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <tr>
+                <td colspan="3">No departments found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

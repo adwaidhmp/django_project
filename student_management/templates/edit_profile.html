@@ -20,7 +20,7 @@
         </div>
         {% endfor %}
 
-        {% if form.non_field_errors %}
+         {% if form.non_field_errors %} {% comment %} non_field_errors() are used when validation depends on multiple fields together. {% endcomment %}
         <div class="edit-profile-error">
             {% for error in form.non_field_errors %}
             <p>{{ error }}</p>

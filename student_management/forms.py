@@ -4,7 +4,6 @@ from .models import CustomUser, Department
 
 
 # Registration Form
-
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     age = forms.IntegerField(required=True)
@@ -20,18 +19,16 @@ class CustomUserCreationForm(UserCreationForm):
             'profile_picture','username', 'email','date_of_birth', 'age', 'place',
             'phone', 'department','password1', 'password2',
         ] #give orderly how yo want
+
         
 # Login Form
-
 class CustomAuthenticationForm(AuthenticationForm):
     class Meta:
         model = CustomUser
         fields = ['username', 'password']
 
-from django import forms
-from .models import CustomUser
-from django.contrib.auth.forms import UserChangeForm
 
+# updation form
 class CustomUserChangeForm(UserChangeForm):
     password = None  # Hide password field
 
@@ -47,13 +44,11 @@ class CustomUserChangeForm(UserChangeForm):
             'date_of_birth': forms.DateInput(
                 attrs={
                     'class': 'form-control',
-                    'type': 'date'  
-                }
-            ),
-        }
+                    'type': 'date' }),
+            }
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
+    def clean_email(self): # these are the inbuilt built functions of is vlaid we are overirding this so it will call automaticalyy wehn is valid is working
+        email = self.cleaned_data.get('email') #self.cleaned_data is a dictionary containing the validated and cleaned data from the form after form.is_valid() is called.It only exists after the form has been validated.
         qs = CustomUser.objects.exclude(pk=self.instance.pk).filter(email=email)
         if qs.exists():
             raise forms.ValidationError("This email is already in use.")
@@ -63,5 +58,5 @@ class CustomUserChangeForm(UserChangeForm):
         username = self.cleaned_data.get('username')
         qs = CustomUser.objects.exclude(pk=self.instance.pk).filter(username=username)
         if qs.exists():
-            raise forms.ValidationError("This username is already taken.")
+            raise forms.ValidationError("This username is already taken.") #form field errros
         return username
