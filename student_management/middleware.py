@@ -14,12 +14,12 @@ class BlockAccessMiddleware:
         # URLs to allow admins on student side
         allowed_for_admin = ['/logout/', '/']  # add other public student URLs if needed
 
-        # Admin trying to access student pages
+        # Admin block to access student pages
         if (request.user.is_staff or request.user.is_superuser) and not path.startswith('/adm/'):
             if path not in allowed_for_admin:
                 return redirect('/adm/')
 
-        # Student trying to access admin pages
+        # Student bloc to access admin pages
         if not (request.user.is_staff or request.user.is_superuser) and path.startswith('/adm/'):
             return redirect('/')  # Redirect to student home
 
