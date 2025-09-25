@@ -27,6 +27,7 @@
             <th>Year of Admission</th>
             <th>Date of Birth</th>
             <th>Profile Picture</th>
+            <th>Add on Course</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -44,11 +45,29 @@
             <td>{{ student.year_of_admission }}</td>
             <td>{{ student.date_of_birth }}</td>
             <td>
-                {% if student.profile_picture %}
-                    <img src="{{ student.profile_picture.url }}" alt="Profile Pic" width="50" height="50">
+                 {% if student.profile_picture %}
+                <img src="{{ student.profile_picture.url }}" alt="Profile Pic" width="100" height="100">
                 {% else %}
-                    -
+                <span>-</span>
                 {% endif %}
+            </td>
+            <td>
+                {% for req in student.coursepurchaserequest_set.all %}
+                    <div>
+                        <strong>{{ req.course.course }}</strong> - 
+                        {% if req.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif req.status == 'approved' %}
+                            <span class="badge bg-info text-dark">In Progress</span>
+                        {% elif req.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                        {% elif req.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    -
+                {% endfor %}
             </td>
             <td>
                 <a href="{% url 'std_edit' student.id %}" class="btn btn-sm btn-warning">Edit</a>

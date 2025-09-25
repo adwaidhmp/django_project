@@ -47,8 +47,8 @@ class CustomUserChangeForm(UserChangeForm):
                     'type': 'date' }),
             }
 
-    def clean_email(self): # these are the inbuilt built functions of is vlaid we are overirding this so it will call automaticalyy wehn is valid is working
-        email = self.cleaned_data.get('email') #self.cleaned_data is a dictionary containing the validated and cleaned data from the form after form.is_valid() is called.It only exists after the form has been validated.
+    def clean_email(self): 
+        email = self.cleaned_data.get('email') 
         qs = CustomUser.objects.exclude(pk=self.instance.pk).filter(email=email)
         if qs.exists():
             raise forms.ValidationError("This email is already in use.")

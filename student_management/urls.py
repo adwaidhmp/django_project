@@ -9,8 +9,10 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit_profile/',views.edit_profile, name='edit_profile'),
+    path('profile/purchase/<int:course_id>/', views.purchase_course, name='purchase_course'),
+    path('profile/course/complete/<int:course_id>/', views.mark_course_completed, name='mark_course_completed'),
     
-        # Forgot Password / Reset Password URLs
+     # Forgot Password / Reset Password URLs
     path('password-reset/',
          auth_views.PasswordResetView.as_view(template_name='password_reset.html'),
          name='password_reset'),

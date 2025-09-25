@@ -5,17 +5,20 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CustomAuthenticationForm,CustomUserChangeForm
 from django.core.mail import send_mail
 from django.conf import settings
-
+from student_management.models import AddOnCourse
+from django.shortcuts import get_object_or_404
+from .models import CoursePurchaseRequest
+from django.utils import timezone
 # Home View
 
 def home_view(request):
-    return render(request, 'base.html')  # Replace with your homepage template
+    return render(request, 'base.html')  
 
 # Registration View
 
 def register_view(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST, request.FILES) # Include request.FILES to handle profile picture
+        form = CustomUserCreationForm(request.POST, request.FILES) # Include request.FILES to get profile picture
         if form.is_valid():
             student = form.save()
             #email sending
@@ -38,6 +41,8 @@ def login_view(request):
         form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
+            if user.is_superuser or user.is_staff:
+                messages.error(request, 'Admins cannot log in here. Please use the admin panel.')
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
             if user.is_superuser:
@@ -60,32 +65,33 @@ def logout_view(request):
 
 # Profile View
 
-@login_required(login_url='login')
+@login_required()
 def profile_view(request):
     user = request.user #Where request.user comes from Django attaches the user attribute to every HttpRequest object via middleware.
+    courses = AddOnCourse.objects.all()
+    pending_requests = CoursePurchaseRequest.objects.filter(student=user, status='pending')
+    approved_requests = CoursePurchaseRequest.objects.filter(student=user, status='approved')
+    completed_requests = CoursePurchaseRequest.objects.filter(student=user, status='completed')
+    rejected_requests = CoursePurchaseRequest.objects.filter(student=user, status='rejected')
+    context = {
+        'user': user,
+        'courses': courses,
+        'pending_requests': pending_requests,
+        'approved_requests': approved_requests,
+        'completed_requests': completed_requests,
+        'rejected_requests': rejected_requests,
+    }
     if not user.is_authenticated:
         messages.error(request, 'You must login to view your profile.')
         return redirect('login') 
-    return render(request, 'profile.html', {'user': user})
-#How it works
+    return render(request, 'profile.html', context)
 
-# When a request comes in, the middleware checks the session (cookie) to see if the user is logged in.
-
-# If the user is logged in:
-
-# It retrieves the user object from the database (AUTH_USER_MODEL).
-
-# Sets request.user to the corresponding CustomUser (or default User).
-
-# If the user is not logged in:
-
-# request.user is set to an AnonymousUser object.
 
 #edit profile view
 
 def edit_profile(request):
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, instance=request.user) #instance=request.user this tell “This form is editing an existing user object, not creating a new one.”
+        form = CustomUserChangeForm(request.POST, instance=request.user) 
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully!')
@@ -93,10 +99,43 @@ def edit_profile(request):
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = CustomUserChangeForm(instance=request.user) #instance=request.user tells Django: “This form is bound to the existing user object.”Django automatically fills each form field with the current value from the model instance.
+        form = CustomUserChangeForm(instance=request.user) 
 
     return render(request, 'edit_profile.html', {'form': form})
 
+
+
+@login_required
+def purchase_course(request, course_id):
+    course = get_object_or_404(AddOnCourse, id=course_id)
+    # Check if already purchased
+    if request.user.purchased_courses.filter(id=course.id).exists():
+        messages.info(request, f'You already own "{course.course}".')
+        return redirect('profile')
+    # Check if there is already a pending request
+    if CoursePurchaseRequest.objects.filter(student=request.user, course=course, status='pending').exists():
+        messages.info(request, f'Your purchase request for "{course.course}" is already pending.')
+        return redirect('profile')
+    # Create a pending purchase request
+    CoursePurchaseRequest.objects.create(student=request.user, course=course)
+    messages.success(request, f'Your purchase request for "{course.course}" has been submitted and is pending approval.')
+    return redirect('profile')
+
+@login_required
+def mark_course_completed(request, course_id):
+    purchase_request = get_object_or_404(
+        CoursePurchaseRequest,
+        student=request.user,
+        course_id=course_id,
+        status='approved'  # Only "In Progress" courses can be marked completed
+    )
+
+    purchase_request.status = 'completed'
+    purchase_request.completed_at = timezone.now()
+    purchase_request.save()
+
+    messages.success(request, f'Course "{purchase_request.course.course}" marked as completed.')
+    return redirect('profile')
 
 # form.isvalid() do this
 # Step 1: Field Validation

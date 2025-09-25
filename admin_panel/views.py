@@ -6,17 +6,16 @@ from student_management.forms import CustomUserCreationForm
 from .forms import FullCustomUserChangeForm
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from student_management.models import Department
+from student_management.models import Department,AddOnCourse,CoursePurchaseRequest
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
 
-def admin_required(user):
-    return user.is_superuser
+
 
 @login_required
-@user_passes_test(admin_required)
 def std_view(request):
     query = request.GET.get('q', '')  # Get search query
     students = CustomUser.objects.all().order_by('roll_number')
@@ -42,10 +41,9 @@ def std_view(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def std_add(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST ,request.FILES)
         if form.is_valid():
             student=form.save()
             subject = "Welcome to ABC College of Arts and Science"
@@ -61,7 +59,6 @@ def std_add(request):
     return render(request, 'student_add.html', {'form': form})
 
 @login_required
-@user_passes_test(admin_required)
 def std_edit(request, pk):
     student = get_object_or_404(CustomUser, pk=pk)
     if request.method == 'POST':
@@ -78,7 +75,6 @@ def std_edit(request, pk):
 
 
 @login_required
-@user_passes_test(admin_required)
 def std_delete(request, pk):
     student = get_object_or_404(CustomUser, pk=pk)
     student.delete()
@@ -86,7 +82,6 @@ def std_delete(request, pk):
     return redirect('std_view')
 
 @login_required
-@user_passes_test(admin_required)
 def department_add(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -105,7 +100,6 @@ def department_add(request):
     return render(request, 'dept.html', {'departments': departments})
 
 @login_required
-@user_passes_test(admin_required)
 def edit_department(request, dept_id):
     dept = get_object_or_404(Department, id=dept_id)
     if request.method == "POST":
@@ -115,10 +109,93 @@ def edit_department(request, dept_id):
         return redirect("department")
     
 @login_required
-@user_passes_test(admin_required)
 def delete_department(request, dept_id):
     dept = get_object_or_404(Department, id=dept_id)
     if request.method == "POST":
         dept.delete()
         messages.success(request, "Department deleted successfully!")
         return redirect("department")
+
+#course managae(add,edit,delete)   
+@login_required
+def course_manage(request):
+    if request.method == "POST":
+        course = request.POST.get("title")
+        description = request.POST.get("description")
+        price = request.POST.get("price")
+
+        if course:
+            if AddOnCourse.objects.filter(course=course).exists():
+                messages.error(request, "Course with this name already exists.")
+            else:
+                AddOnCourse.objects.create(
+                    course=course,
+                    description=description,
+                    price=price
+                )
+                messages.success(request, "Course added successfully!")
+                return redirect("course_manage")
+        else:
+            messages.error(request, "Course course cannot be empty.")
+
+    courses = AddOnCourse.objects.all().order_by('id')
+    return render(request, "addoncourse.html", {"courses": courses})
+
+
+@login_required
+def course_edit(request, course_id):
+    course = get_object_or_404(AddOnCourse, id=course_id)
+    if request.method == "POST":
+        course.course = request.POST.get("course")
+        course.description = request.POST.get("description")
+        course.price = request.POST.get("price")
+        course.save()
+        messages.success(request, "Course updated successfully!")
+        return redirect("course_manage")
+
+
+@login_required
+def course_delete(request, course_id):
+    course = get_object_or_404(AddOnCourse, id=course_id)
+    if request.method == "POST":
+        course.delete()
+        messages.success(request, "Course deleted successfully!")
+        return redirect("course_manage")
+
+#notif
+@login_required
+def manage_course_requests(request):
+    requests = CoursePurchaseRequest.objects.filter(status='pending')
+    return render(request, 'manage_course.html', {'requests': requests})
+
+# Approve request
+@login_required
+def approve_request(request, request_id):
+    purchase_request = get_object_or_404(CoursePurchaseRequest, id=request_id)
+    purchase_request.status = 'approved'
+    purchase_request.approved_at = timezone.now()
+    purchase_request.save()
+
+    # Add course to student purchased_courses
+    purchase_request.student.purchased_courses.add(purchase_request.course)
+    # Send email notification
+    subject = f'Course Approved: {purchase_request.course.course}'
+    message = f'Hello {purchase_request.student.username},\n\n' \
+              f'Your purchase request for the course "{purchase_request.course.course}" has been approved.\n' \
+              f'You can now access the course in your profile.\n\n' \
+              'Happy Learning!\nStudent Management Team'
+    recipient = [purchase_request.student.email]
+
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient, fail_silently=False)
+    
+    messages.success(request, f'Course "{purchase_request.course.course}" approved for {purchase_request.student.username}.')
+    return redirect('manage_course_requests')
+
+# Reject request
+@login_required
+def reject_request(request, request_id):
+    purchase_request = get_object_or_404(CoursePurchaseRequest, id=request_id)
+    purchase_request.status = 'rejected'
+    purchase_request.save()
+    messages.success(request, f'Course "{purchase_request.course.course}" rejected for {purchase_request.student.username}.')
+    return redirect('manage_course_requests')

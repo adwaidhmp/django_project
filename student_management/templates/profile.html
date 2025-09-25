@@ -1,29 +1,95 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
-<div class="profile-container">
-    <!-- Profile Info -->
-    <h3>Profile Information</h3>
-    <hr>
-    <div class="profile-picture">
-    {% if user.profile_picture %}
-        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class='img'>
-    {% else %}
-        <img src="{% static 'student_management/default_profile.png' %}" alt="Default Profile Picture">
-    {% endif %}
-    </div>
-    <ul>
-        <li><strong>Name:</strong> {{ user.username }}</li>
-        <li><strong>Email:</strong> {{ user.email }}</li>
-        <li><strong>Roll Number:</strong> {{ user.roll_number }}</li>
-        <li><strong>Department:</strong> {{ user.department }}</li>
-        <li><strong>Year of Admission:</strong> {{ user.year_of_admission }}</li>
-    </ul>
 
-    <!-- Actions -->
-    <div class="profile-actions">
-        <a href="{% url 'edit_profile' %}" class="logout-btn">Edit Profile</a>
-        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Profile Section -->
+        <div class="col-md-6"  >
+            <div class="profile-container" style="padding: 40px;">
+                <h3>Profile Information</h3>
+                <hr>
+                <div class="profile-picture text-center mb-3">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail" width="150">
+                    {% else %}
+                        <img src="{% static 'student_management/default_profile.png' %}" alt="Default Profile Picture" class="img-thumbnail" width="150">
+                    {% endif %}
+                </div>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>Name:</strong> {{ user.username }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                    <li class="list-group-item"><strong>Roll Number:</strong> {{ user.roll_number }}</li>
+                    <li class="list-group-item"><strong>Department:</strong> {{ user.department }}</li>
+                    <li class="list-group-item"><strong>Year of Admission:</strong> {{ user.year_of_admission }}</li>
+                </ul>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-between mb-4">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+                    <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+                </div>
+
+                <!-- Purchased Courses -->
+                <h5>My Courses</h5>
+        <ul class="list-group">
+         {% for req in user.coursepurchaserequest_set.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ req.course.course }}
+            
+            {% if req.status == 'approved' %}
+                <span class="badge bg-info">In Progress</span>
+                <a href="{% url 'mark_course_completed' req.course.id %}" class="btn btn-sm btn-success ms-2">Mark Completed</a>
+            {% elif req.status == 'completed' %}
+                <span class="badge bg-success">Completed</span>
+            {% elif req.status == 'pending' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+            {% elif req.status == 'rejected' %}
+                <span class="badge bg-danger">Rejected</span>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li class="list-group-item">No courses yet.</li>
+    {% endfor %}
+</ul>
+            </div>
+        </div>
+
+        <!-- Available Courses Section -->
+        <div class="col-md-6" >
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Available Add-On Courses</h5>
+                </div>
+                <div class="card-body">
+                    {% if courses %}
+                        <ul class="list-group">
+                            {% for course in courses %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>{{ course.course }}</h6>
+                                        <small class="text-muted">{{ course.description|truncatechars:60 }}</small><br>
+                                        <strong>Price:</strong> ₹{{ course.price }}
+                                    </div>
+                                    <form method="post" action="{% url 'purchase_course' course.id %}">
+                                        {% csrf_token %}
+                                        {% if course in user.purchased_courses.all %}
+                                            <button type="button" class="btn btn-sm btn-success" disabled>Purchased</button>
+                                        {% elif course in pending_courses %}
+                                            <button type="button" class="btn btn-sm btn-warning" disabled>Pending</button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success">Purchase</button>
+                                        {% endif %}
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No add-on courses available right now.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock content %}
+{% endblock %}
