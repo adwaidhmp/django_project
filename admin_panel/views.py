@@ -18,8 +18,10 @@ from django.utils import timezone
 @login_required
 def std_view(request):
     query = request.GET.get('q', '')  # Get search query
+    gender_filter = request.GET.get('gender', '')
+    
     students = CustomUser.objects.all().order_by('roll_number')
-
+    
     if query:
         students = students.filter(
             Q(username__icontains=query) |
@@ -27,6 +29,9 @@ def std_view(request):
             Q(roll_number__icontains=query) |
             Q(department__name__icontains=query)
         )
+        
+    if gender_filter:
+        students = students.filter(gender=gender_filter)
 
     # Pagination: 10 students per page
     paginator = Paginator(students, 5)
@@ -35,7 +40,8 @@ def std_view(request):
 
     context = {
         'students': page_obj,
-        'query': query
+        'query': query,
+        'gender_filter': gender_filter,
     }
     return render(request, 'student_view.html', context)
 

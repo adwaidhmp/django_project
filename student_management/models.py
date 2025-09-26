@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
-
+from django.core.validators import MinValueValidator
 
 # Department model
 class Department(models.Model):
@@ -14,14 +14,20 @@ class Department(models.Model):
 # Custom user model
 class CustomUser(AbstractUser):
     #extra fields
+    STATUS_CHOICES = (
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+    )
     phone = models.CharField(max_length=15,default='0000000000')
-    age = models.PositiveIntegerField(default=18)
+    age = models.PositiveIntegerField(default=18, validators=[MinValueValidator(18, message="Age must be at least 18.")])
     place = models.CharField(max_length=100,default='unknown')
     department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True)
     roll_number = models.BigIntegerField(unique=True,default=0)
     year_of_admission = models.PositiveIntegerField(default=date.today().year)
     date_of_birth = models.DateField(default=date(2000,1,1))  
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Male')
+
     #cource purchasing 
     purchased_courses = models.ManyToManyField("AddOnCourse", related_name="students", blank=True) # a student can purchase many course
     # Default flags

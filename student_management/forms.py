@@ -16,7 +16,7 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta: 
         model = CustomUser
         fields = [
-            'profile_picture','username', 'email','date_of_birth', 'age', 'place',
+            'profile_picture','username', 'email','date_of_birth', 'age','gender', 'place',
             'phone', 'department','password1', 'password2',
         ] #give orderly how yo want
 
@@ -34,13 +34,14 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'age', 'place', 'phone', 'date_of_birth']  # Added date_of_birth
+        fields = ['username', 'email', 'age', 'place', 'phone','gender', 'date_of_birth']  # Added date_of_birth
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'age': forms.NumberInput(attrs={'class': 'form-control'}),
             'place': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'gender': forms.Select(attrs={'class': 'form-control'}),
             'date_of_birth': forms.DateInput(
                 attrs={
                     'class': 'form-control',
